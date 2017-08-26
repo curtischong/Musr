@@ -2,6 +2,7 @@ package com.example.daniel.museapp;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,6 +32,7 @@ import com.choosemuse.libmuse.ResultLevel;
 import com.djm.tinder.Tinder;
 import com.djm.tinder.auth.AuthenticationException;
 import com.djm.tinder.profile.Profile;
+import com.djm.tinder.user.User;
 
 import android.Manifest;
 import android.app.Activity;
@@ -215,6 +217,7 @@ public class MainActivity extends Activity implements OnClickListener{
         handler.post(tickUi);
 
         new StartUpTinder().execute();
+        new TinderRecommend().execute();
     }
 
     protected void onPause() {
@@ -792,7 +795,7 @@ public class MainActivity extends Activity implements OnClickListener{
 
         protected Profile doInBackground(Void... voids) {
             try {
-                final Tinder tinder = Tinder.fromAccessToken("EAAGm0PX4ZCpsBAPxzWh2Ha7ujg6R63nmk0wOBQbFIqH0nmAh3ZCQnr2a6vvC6mH6eZAfsDLwrJ7ssKsNVGdZAJBXIvYJALiURu0gqi3dCet5VoG6obgwZAZBggjZCxIm7g4q9ZCiSpebZA1NgDVC7BObmj5gm7HHnDHoLKgrxyHhsgaoxgWtn6OZCULdW5XMyDATClPQfZAimMMI5ZCqLkQG25Q0urEtlZBrSi6dH7GNIeqGRsqZBBSDI4DjoWabHxorVvUDOHQppVwnvOZAAZDZD");
+                final Tinder tinder = Tinder.fromAccessToken(ACCESS_TOKEN);
                 Profile profile = tinder.getProfile();
                 Log.i("SUCCESS", String.format("About me: %s", profile.getName()));
                 return profile;
@@ -814,6 +817,41 @@ public class MainActivity extends Activity implements OnClickListener{
             // TODO: do something with the feed
         }
     }
+
+    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAEqySevblk6xRgWSG1caVZCrdB5mBzLVgPpZCKHXWaukgVYgat5fwpjwZAdcOs5gMIdF8E4sBHZAKyMteEEb96dvbBHqyQ5LQmcD8MoBPYn8Yg0SZBZAagqIVc7HG0piHM9rwo8rcDoe56SEHeFFjCK8hug1vy9FInr91qY8Q1ze7F6ahHnk2rnuJ3YSUCldFfIQX6BLzr0IecnLhbFnAgwJ8DGIn2ILTlZCf8q6HRZBIkGxBqybdFMb755IZADZBrnwZDZD";
+    class TinderRecommend extends AsyncTask<Void, Void, ArrayList<User>> {
+
+        private Exception exception;
+
+        protected ArrayList<User> doInBackground(Void... voids) {
+            try {
+                final Tinder tinder = Tinder.fromAccessToken(ACCESS_TOKEN);
+                final ArrayList<User> users = tinder.getRecommendations();
+                for (User user : users) {
+                    Log.i("User",(String.format("See %s", user.getName())));
+                    Log.i("User",(String.format("See %s", user.getPhotos())));
+                }
+                return users;
+            } catch (AuthenticationException e) {
+                Log.i("ERROR",  "Whoops, unable to authenticate to the tinder API. Check your Facebook access token / app's permissions.");
+            } catch (Exception e) {
+                Log.i("ERROR", e.toString());
+                Log.i("ERROR", "there was an error");
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList tinder) {
+            super.onPostExecute(tinder);
+
+            Log.i("test", tinder.toString());
+            // TODO: check this.exception
+            // TODO: do something with the feed
+        }
+    }
+
+
 }
 
 
