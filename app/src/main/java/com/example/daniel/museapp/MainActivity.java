@@ -28,12 +28,16 @@ import com.choosemuse.libmuse.MuseManagerAndroid;
 import com.choosemuse.libmuse.MuseVersion;
 import com.choosemuse.libmuse.Result;
 import com.choosemuse.libmuse.ResultLevel;
+import com.djm.tinder.Tinder;
+import com.djm.tinder.auth.AuthenticationException;
+import com.djm.tinder.profile.Profile;
 
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
@@ -50,12 +54,7 @@ import android.bluetooth.BluetoothAdapter;
 
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import java.io.IOException;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import android.widget.Toast;
 
 /**
  * This example will illustrate how to connect to a Muse headband,
@@ -79,6 +78,8 @@ import okhttp3.Response;
  * 8. To disconnect from the headband, press "Disconnect"
  */
 public class MainActivity extends Activity implements OnClickListener{
+//EAAGm0PX4ZCpsBAOylQXGYpctyZAPaVeQHq67EuRMpV2JjfhW9mgTLpwcfdZB1XYwWAnJH5Q8OpnZCnJA8qZC89ClJ1UvPAylGoNQyRlCiKw1ZAYvEk6rs7OpoCAvWEfCV51iRmJQwWEEGoXA4NzOAjjyI4iVYn7rSpix6RqjD4MHhMwvec6X42LjXQlSipY80ZAfdkNC8LcYC0yLx7tZCr9RJ3bB03z7titfzDrm9e1VvXTwYRVRFZAbykfHFO0or2AhVgZBGoAqxxHgZDZD
+//EAAGm0PX4ZCpsBANBb1ZB49S2kcuKBS15IXTasRy4lNg0ZC2lTASMqliePWxIdDmKSZAH39Xk5rfy5J970LqGcmEGDLt44JVzMvWcCSZCXmlVpKHiL10uiVWdwvuFTmXIgCpr5jOIgWFj3JqAgL9bRr0s5ZCufqlzZARZBunkRe9SaVBADPq7S6lBdCaBKdTK5TfpaGyYrv4NzpEGWzZCJeJkYaOiqBCZCH1GSwEEy4a63wSW739UYHteZCTMdc89Qyp4qqR6Oi8QiG7UgZDZD
 
     /**
      * Tag used for logging purposes.
@@ -212,6 +213,8 @@ public class MainActivity extends Activity implements OnClickListener{
 
         // Start our asynchronous updates of the UI.
         handler.post(tickUi);
+
+        new StartUpTinder().execute();
     }
 
     protected void onPause() {
@@ -782,4 +785,35 @@ public class MainActivity extends Activity implements OnClickListener{
             System.out.println(response);
         }
     }*/
+
+    class StartUpTinder extends AsyncTask<Void, Void, Profile> {
+
+        private Exception exception;
+
+        protected Profile doInBackground(Void... voids) {
+            try {
+                final Tinder tinder = Tinder.fromAccessToken("EAAGm0PX4ZCpsBAPxzWh2Ha7ujg6R63nmk0wOBQbFIqH0nmAh3ZCQnr2a6vvC6mH6eZAfsDLwrJ7ssKsNVGdZAJBXIvYJALiURu0gqi3dCet5VoG6obgwZAZBggjZCxIm7g4q9ZCiSpebZA1NgDVC7BObmj5gm7HHnDHoLKgrxyHhsgaoxgWtn6OZCULdW5XMyDATClPQfZAimMMI5ZCqLkQG25Q0urEtlZBrSi6dH7GNIeqGRsqZBBSDI4DjoWabHxorVvUDOHQppVwnvOZAAZDZD");
+                Profile profile = tinder.getProfile();
+                Log.i("SUCCESS", String.format("About me: %s", profile.getName()));
+                return profile;
+            } catch (AuthenticationException e) {
+                Log.i("ERROR",  "Whoops, unable to authenticate to the tinder API. Check your Facebook access token / app's permissions.");
+            } catch (Exception e) {
+                Log.i("ERROR", e.toString());
+                Log.i("ERROR", "there was an error");
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Profile tinder) {
+            super.onPostExecute(tinder);
+
+            Log.i("test", tinder.toString());
+            // TODO: check this.exception
+            // TODO: do something with the feed
+        }
+    }
 }
+
+
