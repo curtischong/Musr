@@ -5,12 +5,25 @@ android {
     buildToolsVersion "24.0.2"
     defaultConfig {
         applicationId "com.example.daniel.museapp"
-        minSdkVersion 15
+        minSdkVersion 19
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        jackOptions {
+            enabled true
+        }
     }
+
+    dexOptions {
+        incremental true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -31,6 +44,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.github.0x13a:tinder-api:1.0-SNAPSHOT'
     compile files('libs/libmuse_android.jar')
+    compile 'com.google.android.gms:play-services-appindexing:8.4.0'
 }
 
 configurations.all {
