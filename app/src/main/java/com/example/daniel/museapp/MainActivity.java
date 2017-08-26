@@ -32,6 +32,7 @@ import com.choosemuse.libmuse.ResultLevel;
 import com.djm.tinder.Tinder;
 import com.djm.tinder.auth.AuthenticationException;
 import com.djm.tinder.profile.Profile;
+import com.djm.tinder.user.Photo;
 import com.djm.tinder.user.User;
 
 import android.Manifest;
@@ -829,7 +830,10 @@ public class MainActivity extends Activity implements OnClickListener{
                 final ArrayList<User> users = tinder.getRecommendations();
                 for (User user : users) {
                     Log.i("User",(String.format("See %s", user.getName())));
-                    Log.i("User",(String.format("See %s", user.getPhotos())));
+                    ArrayList<Photo> photos = user.getPhotos();
+                    for(Photo photo : photos){
+                        Log.i("User",(String.format("See %s", photo.getUrl())));
+                    }
                 }
                 return users;
             } catch (AuthenticationException e) {
