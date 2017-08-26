@@ -44,7 +44,9 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.github.0x13a:tinder-api:1.0-SNAPSHOT'
     compile files('libs/libmuse_android.jar')
+    compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.google.android.gms:play-services-appindexing:8.4.0'
+    compile group: 'com.github.wendykierp', name: 'JTransforms', version: '3.1'
 }
 
 configurations.all {
