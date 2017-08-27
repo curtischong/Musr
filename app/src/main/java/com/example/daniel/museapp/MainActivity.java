@@ -177,6 +177,7 @@ public class MainActivity extends Activity implements OnClickListener{
      */
     private final AtomicReference<Handler> fileHandler = new AtomicReference<>();
 
+    private FFT fft;
 
     //--------------------------------------
     // Lifecycle / Connection code
@@ -186,6 +187,8 @@ public class MainActivity extends Activity implements OnClickListener{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        fft = new FFT(256, 256, 256);
 
         // We need to set the context on MuseManagerAndroid before we can do anything.
         // This must come before other LibMuse API calls as it also loads the library.
@@ -505,13 +508,6 @@ public class MainActivity extends Activity implements OnClickListener{
 
         buffer[4] = p.getEegChannelValue(Eeg.AUX_LEFT);
         buffer[5] = p.getEegChannelValue(Eeg.AUX_RIGHT);
-
-        //PostExample example = new PostExample();
-        long newTime = System.currentTimeMillis();
-        for (double item : buffer) {
-            Log.i("EEG", Double.toString(item));
-        }
-
     }
 
     private void getAccelValues(MuseDataPacket p) {
