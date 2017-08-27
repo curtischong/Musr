@@ -5,6 +5,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.choosemuse.libmuse.Accelerometer;
@@ -20,7 +21,6 @@ import com.choosemuse.libmuse.MuseConnectionListener;
 import com.choosemuse.libmuse.MuseConnectionPacket;
 import com.choosemuse.libmuse.MuseDataListener;
 import com.choosemuse.libmuse.MuseDataPacket;
-import com.choosemuse.libmuse.MuseDataPacketType;
 import com.choosemuse.libmuse.MuseFileFactory;
 import com.choosemuse.libmuse.MuseFileReader;
 import com.choosemuse.libmuse.MuseFileWriter;
@@ -32,9 +32,7 @@ import com.choosemuse.libmuse.ResultLevel;
 import com.djm.tinder.Tinder;
 import com.djm.tinder.auth.AuthenticationException;
 import com.djm.tinder.like.Like;
-import com.djm.tinder.like.LikeRequest;
 import com.djm.tinder.profile.Profile;
-import com.djm.tinder.profile.ProfileRequest;
 import com.djm.tinder.user.Photo;
 import com.djm.tinder.user.User;
 
@@ -61,9 +59,9 @@ import android.bluetooth.BluetoothAdapter;
 
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.widget.Toast;
 
 import com.example.daniel.museapp.classifier.ClassifierModule;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -90,7 +88,7 @@ import com.squareup.picasso.Picasso;
 public class MainActivity extends Activity implements OnClickListener{
 //EAAGm0PX4ZCpsBAOylQXGYpctyZAPaVeQHq67EuRMpV2JjfhW9mgTLpwcfdZB1XYwWAnJH5Q8OpnZCnJA8qZC89ClJ1UvPAylGoNQyRlCiKw1ZAYvEk6rs7OpoCAvWEfCV51iRmJQwWEEGoXA4NzOAjjyI4iVYn7rSpix6RqjD4MHhMwvec6X42LjXQlSipY80ZAfdkNC8LcYC0yLx7tZCr9RJ3bB03z7titfzDrm9e1VvXTwYRVRFZAbykfHFO0or2AhVgZBGoAqxxHgZDZD
 //EAAGm0PX4ZCpsBANBb1ZB49S2kcuKBS15IXTasRy4lNg0ZC2lTASMqliePWxIdDmKSZAH39Xk5rfy5J970LqGcmEGDLt44JVzMvWcCSZCXmlVpKHiL10uiVWdwvuFTmXIgCpr5jOIgWFj3JqAgL9bRr0s5ZCufqlzZARZBunkRe9SaVBADPq7S6lBdCaBKdTK5TfpaGyYrv4NzpEGWzZCJeJkYaOiqBCZCH1GSwEEy4a63wSW739UYHteZCTMdc89Qyp4qqR6Oi8QiG7UgZDZD
-    private ClassifierModule test;
+
     /**
      * Tag used for logging purposes.
      */
@@ -185,9 +183,11 @@ public class MainActivity extends Activity implements OnClickListener{
     //--------------------------------------
     // Lifecycle / Connection code
 
-    ArrayList<User> gatheredUsers = new ArrayList<User>();
-    Profile yourProfile;
-    int currentUser = 0;
+    private ClassifierModule classifier;
+
+    private ArrayList<User> gatheredUsers = new ArrayList<User>();
+    private Profile yourProfile;
+    private int currentUser = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -237,6 +237,8 @@ public class MainActivity extends Activity implements OnClickListener{
     }
 
     protected void loadNextImage(){
+        Log.i("test", Integer.toString(currentUser));
+        Log.i("test", Integer.toString(gatheredUsers.size()));
         if (currentUser < gatheredUsers.size()) {
             ImageView imageView = (ImageView) findViewById(R.id.imageView);
             Picasso.with(MainActivity.this)
@@ -244,8 +246,18 @@ public class MainActivity extends Activity implements OnClickListener{
                     .resize(800, 800)
                     //.fit()
                     .centerInside()
-                    .into(imageView);
-            new TinderResult().execute();
+                    .into(imageView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            classifier.collectData();
+                        }
+
+                        @Override
+                        public void onError() {
+                            Log.e("Picasso", "Error loading image");
+                        }
+                    });
+            // new TinderResult().execute();
             currentUser++;
             if(currentUser == gatheredUsers.size()){
                 new StartUpTinder().execute();
@@ -293,7 +305,6 @@ public class MainActivity extends Activity implements OnClickListener{
             if (availableMuses.size() < 1 || musesSpinner.getAdapter().getCount() < 1) {
                 Log.w(TAG, "There is nothing to connect to");
             } else {
-                Log.i("test", "wtf");
 
                 // Cache the Muse that the user has selected.
                 muse = availableMuses.get(musesSpinner.getSelectedItemPosition());
@@ -313,13 +324,10 @@ public class MainActivity extends Activity implements OnClickListener{
 
                 // Initiate a connection to the headband and stream the data asynchronously.
                 muse.runAsynchronously();
-                Log.i("test", ":(");
 
-                test = new ClassifierModule(this);
-                Log.i("test", ":(");
-                test.init();
-                test.collectData();
-                Log.i("test", ":(");
+                classifier = new ClassifierModule(this);
+                classifier.init();
+                classifier.listenData();
             }
 
         } else if (v.getId() == R.id.disconnect) {
@@ -340,9 +348,8 @@ public class MainActivity extends Activity implements OnClickListener{
                 muse.enableDataTransmission(dataTransmission);
             }
         }else if(v.getId() == R.id.next_button){
+            Log.i("test", "click");
             loadNextImage();
-        } else if (v.getId() == R.id.change_button) {
-            test.bumpMode();
         }
     }
 
@@ -552,8 +559,6 @@ public class MainActivity extends Activity implements OnClickListener{
         pauseButton.setOnClickListener(this);
         Button nextImageBtn = (Button) findViewById(R.id.next_button);
         nextImageBtn.setOnClickListener(this);
-        Button changeBtn = (Button) findViewById(R.id.change_button);
-        changeBtn.setOnClickListener(this);
 
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
         Spinner musesSpinner = (Spinner) findViewById(R.id.muses_spinner);
@@ -863,7 +868,7 @@ public class MainActivity extends Activity implements OnClickListener{
         }
     }
 
-    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAPnVC2fqTZAJHhC2zsVSoZC4PDsf7ExSzZCPBUZCSGfjKTaIo7ZCET43gMP4q4op3yXoE1TdKso6FuBV0fAtuwmdc34ZBlTrJoGEnw6JamAF67Ev33s2ZBN0vIIQ66ZCcKOk8yGLknMRzavERaZAtGGGWj1s3C9u7ZCxdL34zIhSOXdG3yW7Qrr21GZCbAsDkUWwz75IwZCplkc2WE1mZA7rts1nx9XubJdcMsHfEEKtbgipSoQs9p3tNnanZBsfo6O2ACeQZDZD";
+    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAOvCNq4JIcQN2zmokfzh9M6o82lEvRRAOUXZCE5jZA5RP8Rv70fcuKSu2FOskWWZB5mQHB65GUiP2p0WuUMBkCRdsBEserc2rqwWvyPqBUEv9TaNils0ETFaeQUu3PrUKMmFpHFhxQbSZBUhGYZBB8pHHm80uCxz2kaocoKASZBbDTuKwYmGNJp3UwZA8FyVMZCAKjZAl8OoZCZAa401hNuLuPWOeaQj1ylsbbxilCSmDYFulMMgGleQOIXHq34547ZCOQZDZD";
 
     class TinderRecommend extends AsyncTask<Void, Void, ArrayList<User>> {
 

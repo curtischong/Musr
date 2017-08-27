@@ -14,7 +14,6 @@ import com.example.daniel.museapp.MainActivity;
 import com.example.daniel.museapp.signal.BandPowerExtractor;
 import com.example.daniel.museapp.signal.FFT;
 import com.example.daniel.museapp.signal.Filter;
-import com.example.daniel.museapp.utils.Save;
 
 //import com.eeg_project.components.signal.NoiseDetector;
 
@@ -33,6 +32,7 @@ public class ClassifierModule implements BufferListener {
     public static final int FFT_LENGTH = 256;
     public static final int NUM_CHANNELS = 4;
     private boolean isListening;
+    private int epochs;
     public int samplingRate = 256;
     private int nbBins;
     public ClassifierDataListener dataListener;
@@ -41,11 +41,10 @@ public class ClassifierModule implements BufferListener {
     private Handler dataHandler;
     private FFT fft;
     public BandPowerExtractor bandExtractor;
-    private int stage;
-    private int stageMax;
 
-    public LinkedList<double[]>[] data = (LinkedList<double[]>[]) new LinkedList<?>[3];
-    public double[][] dataPoints = new double[3][4];
+    public LinkedList<double[]> data = new LinkedList<>();
+    private double[] averageSum = new double[2];
+    private int averageLength;
 
     // grab reference to global Muse
     private MainActivity mActivity;
@@ -63,66 +62,14 @@ public class ClassifierModule implements BufferListener {
                 samplingRate = 220;
             }
         }
-        stage = 0;
-        stageMax = 2;
-        for(int i = 0; i <= stageMax; i++){
-            data[i] = new LinkedList<>();
-        }
+        epochs = 0;
         fft = new FFT(samplingRate, FFT_LENGTH, samplingRate);
         nbBins = fft.getFreqBins().length;
         bandExtractor = new BandPowerExtractor(fft.getFreqBins());
         dataListener = new ClassifierDataListener();
     }
 
-    public void bumpMode() {
-        if (stage > stageMax) {
-            return;
-        }
-        int length = data[stage].size();
-        double[] averages = new double[3];
-        double[] seconds = new double[4];
-        for (double[] bands : data[stage]) {
-            double frontRatio = bands[1] / bands[2];
-            double backRatio = bands[0] / bands[3];
-            double averageRatio = (frontRatio + backRatio) / 2;
-            averages[0] += frontRatio;
-            averages[1] += backRatio;
-            averages[2] += averageRatio;
-            seconds[0] += bands[0];
-            seconds[1] += bands[1];
-            seconds[2] += bands[2];
-            seconds[3] += bands[3];
-        }
-        averages[0] /= length;
-        averages[1] /= length;
-        averages[2] /= length;
-        seconds[0] /= length;
-        seconds[1] /= length;
-        seconds[2] /= length;
-        seconds[3] /= length;
-        dataPoints[stage][0] = seconds[0];
-        dataPoints[stage][1] = seconds[1];
-        dataPoints[stage][2] = seconds[2];
-        dataPoints[stage][3] = seconds[3];
-
-        Log.i("test", "-- " + stage + " --");
-        Log.i("test", "front: " + averages[0]);
-        Log.i("test", "back: " + averages[1]);
-        Log.i("test", "combined: " + averages[2]);
-        Log.i("test", "left back: " + seconds[0]);
-        Log.i("test", "left front: " + seconds[1]);
-        Log.i("test", "right front: " + seconds[2]);
-        Log.i("test", "right back: " + seconds[3]);
-        Log.i("test", "-- end --");
-        stage ++;
-        if(stage > stageMax) {
-            this.stopCollecting();
-        }
-    }
-
-    public void collectData() {
-        isListening = true;
-
+    public void listenData() {
         eegBuffer = new EpochBuffer(samplingRate, NUM_CHANNELS, samplingRate);
         eegBuffer.addListener(this);
 
@@ -130,17 +77,15 @@ public class ClassifierModule implements BufferListener {
         startThread();
     }
 
+    public void collectData() {
+        data = new LinkedList<>();
+        epochs = 0;
+        isListening = true;
+
+        Log.i("test", "collecting...");
+    }
+
     public void stopCollecting() {
-        Log.i("test", "Hot left back: " + (dataPoints[1][0] - dataPoints[0][0]));
-        Log.i("test", "Hot left front: " + (dataPoints[1][1] - dataPoints[0][1]));
-        Log.i("test", "Hot right front: " + (dataPoints[1][2] - dataPoints[0][2]));
-        Log.i("test", "Hot right back: " + (dataPoints[1][3] - dataPoints[0][3]));
-
-        Log.i("test", "Not Hot left back: " + (dataPoints[2][0] - dataPoints[0][0]));
-        Log.i("test", "Not Hot left front: " + (dataPoints[2][1] - dataPoints[0][1]));
-        Log.i("test", "Not Hot right front: " + (dataPoints[2][2] - dataPoints[0][2]));
-        Log.i("test", "Not Hot right back: " + (dataPoints[2][3] - dataPoints[0][3]));
-
         isListening = false;
         mActivity.muse.unregisterDataListener(dataListener, MuseDataPacketType.EEG);
         stopThread();
@@ -194,21 +139,41 @@ public class ClassifierModule implements BufferListener {
 //            if (noisePresent(rawBuffer)) {
 //                return;
 //            }
+            getPSD(rawBuffer);
+            band2D = bandExtractor.extract2D(PSD);
+            averageSum[0] += band2D[1][2];
+            averageSum[1] += band2D[2][2];
+            averageLength += 1;
+            Log.i("average", "left: " + (averageSum[0] / averageLength));
+            Log.i("average", "right: " + (averageSum[1] / averageLength));
+
 
             if(isListening) {
-                getPSD(rawBuffer);
-                band2D = bandExtractor.extract2D(PSD);
-                for(int i = 0; i < NUM_CHANNELS; i++) {
-                    bands[i] = band2D[i][2];
+                if (epochs == 0) {
+                    epochs ++;
+                    return;
+                } else if (epochs > 3) {
+                    double leftAverage = 0;
+                    double rightAverage = 0;
+                    for (double[] epoch : data) {
+                        leftAverage += epoch[0];
+                        rightAverage += epoch[1];
+                    }
+                    leftAverage /= data.size();
+                    rightAverage /= data.size();
+                    Log.i("average", "data left: " + leftAverage);
+                    Log.i("average", "data right: " + rightAverage);
+                    isListening = false;
+                    return;
                 }
-//                double frontRatio = bands[1] / bands[2];
-//                double backRatio = bands[0] / bands[3];
-//                Log.i("test", "-- start --");
-//                Log.i("test", "front: " + frontRatio);
-//                Log.i("test", "back: " + backRatio);
-//                Log.i("test", "combined: " + (frontRatio + backRatio) / 2);
-//                Log.i("test", "-- end --");
-                data[stage].add(bands);
+                bands[0] += band2D[1][2]; // left forehead
+                bands[1] += band2D[2][2]; // right forehead
+//                for(int i = 0; i < NUM_CHANNELS; i++) {
+//                    bands[i] = band2D[i][2];
+//                    Log.i("test", i + ": " + bands[i]);
+//                }
+                data.add(bands);
+                epochs ++;
             }
 
         }
