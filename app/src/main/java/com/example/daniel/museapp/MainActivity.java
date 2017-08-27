@@ -42,6 +42,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -229,6 +230,8 @@ public class MainActivity extends Activity implements OnClickListener{
         sut.execute();
         TinderRecommend tr = new TinderRecommend();
         tr.execute();*/
+        statusText = (TextView) findViewById(R.id.con_status) ;
+        statusText2 = (TextView) findViewById(R.id.status_text) ;
         new StartUpTinder().execute();
         new TinderRecommend().execute();
 
@@ -247,7 +250,11 @@ public class MainActivity extends Activity implements OnClickListener{
                     .into(imageView, new Callback() {
                         @Override
                         public void onSuccess() {
-                            classifier.collectData();
+                            try{
+                                classifier.collectData();
+                            }catch (NullPointerException e){
+                                Log.i("WARNING", "CONNECT YOUR MUSE!");
+                            }
                         }
 
                         @Override
@@ -354,12 +361,36 @@ public class MainActivity extends Activity implements OnClickListener{
                 dataTransmission = !dataTransmission;
                 muse.enableDataTransmission(dataTransmission);
             }
-        }else if(v.getId() == R.id.next_button){
+        } else if(v.getId() == R.id.next_button){
             Log.i("test", "click");
             loadNextImage();
+        } else if(v.getId() == R.id.debug){
+
+            Log.i("hello", "statechange");
+            if(debugState){
+                refreshButton.setVisibility(View.GONE);
+                nextImageBtn.setVisibility(View.GONE);
+                connectButton.setVisibility(View.GONE);
+                disconnectButton.setVisibility(View.GONE);
+                pauseButton.setVisibility(View.GONE);
+                statusText.setVisibility(View.GONE);
+                statusText2.setVisibility(View.GONE);
+                musesSpinner.setVisibility(View.GONE);
+                debugState =false;
+            }else{
+                refreshButton.setVisibility(View.VISIBLE);
+                nextImageBtn.setVisibility(View.VISIBLE);
+                connectButton.setVisibility(View.VISIBLE);
+                disconnectButton.setVisibility(View.VISIBLE);
+                pauseButton.setVisibility(View.VISIBLE);
+                statusText.setVisibility(View.VISIBLE);
+                statusText2.setVisibility(View.VISIBLE);
+                musesSpinner.setVisibility(View.VISIBLE);
+                debugState = true;
+            }
         }
     }
-
+    Boolean debugState = true;
     //--------------------------------------
     // Permissions
 
@@ -427,6 +458,8 @@ public class MainActivity extends Activity implements OnClickListener{
      * @param p     A packet containing the current and prior connection states
      * @param muse  The headband whose state changed.
      */
+    TextView statusText;
+    TextView statusText2;
     public void receiveMuseConnectionPacket(final MuseConnectionPacket p, final Muse muse) {
 
         final ConnectionState current = p.getCurrentConnectionState();
@@ -440,7 +473,7 @@ public class MainActivity extends Activity implements OnClickListener{
             @Override
             public void run() {
 
-                final TextView statusText = (TextView) findViewById(R.id.con_status);
+                statusText = (TextView) findViewById(R.id.con_status);
                 statusText.setText(status);
 
             }
@@ -452,6 +485,9 @@ public class MainActivity extends Activity implements OnClickListener{
             saveFile();
             // We have disconnected from the headband, so set our cached copy to null.
             this.muse = null;
+            connectButton.setTextColor(Color.BLACK);
+        }else{
+            connectButton.setTextColor(Color.GREEN);
         }
     }
 
@@ -541,21 +577,30 @@ public class MainActivity extends Activity implements OnClickListener{
     /**
      * Initializes the UI of the example application.
      */
+    Button connectButton;
+    Button disconnectButton;
+    Button pauseButton;
+    Button nextImageBtn;
+    Button refreshButton;
+    Button debug;
+    Spinner musesSpinner;
     private void initUI() {
         setContentView(R.layout.activity_main);
-        Button refreshButton = (Button) findViewById(R.id.refresh);
+        refreshButton = (Button) findViewById(R.id.refresh);
         refreshButton.setOnClickListener(this);
-        Button connectButton = (Button) findViewById(R.id.connect);
+        connectButton = (Button) findViewById(R.id.connect);
         connectButton.setOnClickListener(this);
-        Button disconnectButton = (Button) findViewById(R.id.disconnect);
+        disconnectButton = (Button) findViewById(R.id.disconnect);
         disconnectButton.setOnClickListener(this);
-        Button pauseButton = (Button) findViewById(R.id.pause);
+        pauseButton = (Button) findViewById(R.id.pause);
         pauseButton.setOnClickListener(this);
-        Button nextImageBtn = (Button) findViewById(R.id.next_button);
+        nextImageBtn = (Button) findViewById(R.id.next_button);
         nextImageBtn.setOnClickListener(this);
+        debug = (Button) findViewById(R.id.debug);
+        debug.setOnClickListener(this);
 
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
-        Spinner musesSpinner = (Spinner) findViewById(R.id.muses_spinner);
+        musesSpinner = (Spinner) findViewById(R.id.muses_spinner);
         musesSpinner.setAdapter(spinnerAdapter);
     }
 
