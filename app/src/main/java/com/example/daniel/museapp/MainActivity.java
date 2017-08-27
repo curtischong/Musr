@@ -59,6 +59,8 @@ import android.bluetooth.BluetoothAdapter;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.widget.Toast;
+
+import com.example.daniel.museapp.classifier.ClassifierModule;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -85,7 +87,7 @@ import com.squareup.picasso.Picasso;
 public class MainActivity extends Activity implements OnClickListener{
 //EAAGm0PX4ZCpsBAOylQXGYpctyZAPaVeQHq67EuRMpV2JjfhW9mgTLpwcfdZB1XYwWAnJH5Q8OpnZCnJA8qZC89ClJ1UvPAylGoNQyRlCiKw1ZAYvEk6rs7OpoCAvWEfCV51iRmJQwWEEGoXA4NzOAjjyI4iVYn7rSpix6RqjD4MHhMwvec6X42LjXQlSipY80ZAfdkNC8LcYC0yLx7tZCr9RJ3bB03z7titfzDrm9e1VvXTwYRVRFZAbykfHFO0or2AhVgZBGoAqxxHgZDZD
 //EAAGm0PX4ZCpsBANBb1ZB49S2kcuKBS15IXTasRy4lNg0ZC2lTASMqliePWxIdDmKSZAH39Xk5rfy5J970LqGcmEGDLt44JVzMvWcCSZCXmlVpKHiL10uiVWdwvuFTmXIgCpr5jOIgWFj3JqAgL9bRr0s5ZCufqlzZARZBunkRe9SaVBADPq7S6lBdCaBKdTK5TfpaGyYrv4NzpEGWzZCJeJkYaOiqBCZCH1GSwEEy4a63wSW739UYHteZCTMdc89Qyp4qqR6Oi8QiG7UgZDZD
-
+    private ClassifierModule test;
     /**
      * Tag used for logging purposes.
      */
@@ -219,6 +221,8 @@ public class MainActivity extends Activity implements OnClickListener{
         // Start our asynchronous updates of the UI.
         handler.post(tickUi);
 
+
+
         /*StartUpTinder sut = new StartUpTinder();
         sut.execute();
         TinderRecommend tr = new TinderRecommend();
@@ -283,6 +287,7 @@ public class MainActivity extends Activity implements OnClickListener{
             if (availableMuses.size() < 1 || musesSpinner.getAdapter().getCount() < 1) {
                 Log.w(TAG, "There is nothing to connect to");
             } else {
+                Log.i("test", "wtf");
 
                 // Cache the Muse that the user has selected.
                 muse = availableMuses.get(musesSpinner.getSelectedItemPosition());
@@ -290,17 +295,25 @@ public class MainActivity extends Activity implements OnClickListener{
                 // receive the MuseDataPacketTypes we are interested in.  If you do
                 // not register a listener for a particular data type, you will not
                 // receive data packets of that type.
+
                 muse.unregisterAllListeners();
                 muse.registerConnectionListener(connectionListener);
-                muse.registerDataListener(dataListener, MuseDataPacketType.EEG);
-                muse.registerDataListener(dataListener, MuseDataPacketType.ALPHA_RELATIVE);
-                muse.registerDataListener(dataListener, MuseDataPacketType.ACCELEROMETER);
-                muse.registerDataListener(dataListener, MuseDataPacketType.BATTERY);
-                muse.registerDataListener(dataListener, MuseDataPacketType.DRL_REF);
-                muse.registerDataListener(dataListener, MuseDataPacketType.QUANTIZATION);
+//                muse.registerDataListener(dataListener, MuseDataPacketType.EEG);
+//                muse.registerDataListener(dataListener, MuseDataPacketType.ALPHA_RELATIVE);
+//                muse.registerDataListener(dataListener, MuseDataPacketType.ACCELEROMETER);
+//                muse.registerDataListener(dataListener, MuseDataPacketType.BATTERY);
+//                muse.registerDataListener(dataListener, MuseDataPacketType.DRL_REF);
+//                muse.registerDataListener(dataListener, MuseDataPacketType.QUANTIZATION);
 
                 // Initiate a connection to the headband and stream the data asynchronously.
                 muse.runAsynchronously();
+                Log.i("test", ":(");
+
+                test = new ClassifierModule(this);
+                Log.i("test", ":(");
+                test.init();
+                test.collectData();
+                Log.i("test", ":(");
             }
 
         } else if (v.getId() == R.id.disconnect) {
@@ -322,6 +335,8 @@ public class MainActivity extends Activity implements OnClickListener{
             }
         }else if(v.getId() == R.id.next_button){
             loadNextImage();
+        } else if (v.getId() == R.id.change_button) {
+            test.bumpMode();
         }
     }
 
@@ -531,6 +546,8 @@ public class MainActivity extends Activity implements OnClickListener{
         pauseButton.setOnClickListener(this);
         Button nextImageBtn = (Button) findViewById(R.id.next_button);
         nextImageBtn.setOnClickListener(this);
+        Button changeBtn = (Button) findViewById(R.id.change_button);
+        changeBtn.setOnClickListener(this);
 
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
         Spinner musesSpinner = (Spinner) findViewById(R.id.muses_spinner);
