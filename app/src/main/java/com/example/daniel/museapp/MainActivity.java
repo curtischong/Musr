@@ -175,6 +175,7 @@ public class MainActivity extends Activity implements OnClickListener{
      */
     private final AtomicReference<Handler> fileHandler = new AtomicReference<>();
 
+    private FFT fft;
 
     //--------------------------------------
     // Lifecycle / Connection code
@@ -183,6 +184,8 @@ public class MainActivity extends Activity implements OnClickListener{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        fft = new FFT(256,256,256);
 
         // We need to set the context on MuseManagerAndroid before we can do anything.
         // This must come before other LibMuse API calls as it also loads the library.
