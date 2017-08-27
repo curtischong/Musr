@@ -209,10 +209,24 @@ public class ClassifierModule implements BufferListener {
                     double average = (left + right) / 2;
                     if (average < 0) {
                         Log.i("state", "attracted");
-                        mActivity.likeTinder();
+                        Handler mainHandler = new Handler(mActivity.getMainLooper());
+                        mainHandler.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                mActivity.likeTinder();
+                            }
+                        });
                     } else {
                         Log.i("state", "not attracted");
-                        mActivity.dislikeTinder();
+                        Handler mainHandler = new Handler(mActivity.getMainLooper());
+                        mainHandler.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                mActivity.dislikeTinder();
+                            }
+                        });
                     }
                     isListening = false;
                     return;
