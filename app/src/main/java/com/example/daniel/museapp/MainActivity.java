@@ -31,7 +31,10 @@ import com.choosemuse.libmuse.Result;
 import com.choosemuse.libmuse.ResultLevel;
 import com.djm.tinder.Tinder;
 import com.djm.tinder.auth.AuthenticationException;
+import com.djm.tinder.like.Like;
+import com.djm.tinder.like.LikeRequest;
 import com.djm.tinder.profile.Profile;
+import com.djm.tinder.profile.ProfileRequest;
 import com.djm.tinder.user.Photo;
 import com.djm.tinder.user.User;
 
@@ -183,6 +186,7 @@ public class MainActivity extends Activity implements OnClickListener{
     // Lifecycle / Connection code
 
     ArrayList<User> gatheredUsers = new ArrayList<User>();
+    Profile yourProfile;
     int currentUser = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -227,8 +231,8 @@ public class MainActivity extends Activity implements OnClickListener{
         sut.execute();
         TinderRecommend tr = new TinderRecommend();
         tr.execute();*/
-        //new StartUpTinder().execute();
-        //new TinderRecommend().execute();
+        new StartUpTinder().execute();
+        new TinderRecommend().execute();
 
     }
 
@@ -241,6 +245,7 @@ public class MainActivity extends Activity implements OnClickListener{
                     //.fit()
                     .centerInside()
                     .into(imageView);
+            new TinderResult().execute();
             currentUser++;
             if(currentUser == gatheredUsers.size()){
                 new StartUpTinder().execute();
@@ -251,6 +256,7 @@ public class MainActivity extends Activity implements OnClickListener{
     }
 
     protected void onPause() {
+
         super.onPause();
         // It is important to call stopListening when the Activity is paused
         // to avoid a resource leak from the LibMuse library.
@@ -835,9 +841,9 @@ public class MainActivity extends Activity implements OnClickListener{
         protected Profile doInBackground(Void... voids) {
             try {
                 final Tinder tinder = Tinder.fromAccessToken(ACCESS_TOKEN);
-                Profile profile = tinder.getProfile();
-                Log.i("SUCCESS", String.format("About me: %s", profile.getName()));
-                return profile;
+                yourProfile = tinder.getProfile();
+                Log.i("SUCCESS", String.format("About me: %s", yourProfile.getName()));
+                return yourProfile;
             } catch (AuthenticationException e) {
                 Log.i("ERROR",  "Whoops, unable to authenticate to the tinder API. Check your Facebook access token / app's permissions.");
             } catch (Exception e) {
@@ -857,7 +863,8 @@ public class MainActivity extends Activity implements OnClickListener{
         }
     }
 
-    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAAl4IsXz1LGMI2pXYHNn8bJP31KRN9RDvtCsuesN6ZB6m0Kqb1FlUYqYSugyfGeFSiVdhYQZBbNaX6Yw0ciXGHrC2ZAOQTOUpVMGdOZBtodjtBbwmQFe0is26gCcdWvil3tfTu4L5pDei5OGknAQ7ZCFy4WbeMV8SZAuyDO0hWkAyY8vbz1xOM7H6I4wl42IPzkjpe9ok4z0Jvptqx82ntxbBZAXVSUcPpIZAIL4okXKUOrMB7dQIKzMdlsL0HgPlQZDZD";
+    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAPnVC2fqTZAJHhC2zsVSoZC4PDsf7ExSzZCPBUZCSGfjKTaIo7ZCET43gMP4q4op3yXoE1TdKso6FuBV0fAtuwmdc34ZBlTrJoGEnw6JamAF67Ev33s2ZBN0vIIQ66ZCcKOk8yGLknMRzavERaZAtGGGWj1s3C9u7ZCxdL34zIhSOXdG3yW7Qrr21GZCbAsDkUWwz75IwZCplkc2WE1mZA7rts1nx9XubJdcMsHfEEKtbgipSoQs9p3tNnanZBsfo6O2ACeQZDZD";
+
     class TinderRecommend extends AsyncTask<Void, Void, ArrayList<User>> {
 
         private Exception exception;
@@ -885,6 +892,38 @@ public class MainActivity extends Activity implements OnClickListener{
 
         @Override
         protected void onPostExecute(ArrayList tinder) {
+            super.onPostExecute(tinder);
+
+            //Log.i("test", tinder.toString());
+            // TODO: check this.exception
+            // TODO: do something with the feed
+        }
+    }
+
+    class TinderResult extends AsyncTask<Void, Void, Like> {
+
+        private Exception exception;
+
+        protected Like doInBackground(Void... voids) {
+            try {
+                final Tinder tinder = Tinder.fromAccessToken(ACCESS_TOKEN);
+                Like like = tinder.like(gatheredUsers.get(currentUser));
+                if (like.isMatch() == true) {
+                    System.out.println(String.format("Matched with %s!", gatheredUsers.get(currentUser).getName()));
+                }
+
+            } catch (AuthenticationException e) {
+                Log.i("ERROR",  "Whoops, unable to authenticate to the tinder API. Check your Facebook access token / app's permissions.");
+            } catch (Exception e) {
+                Log.i("ERROR", e.toString());
+                Log.i("ERROR", "there was an error");
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Like tinder) {
             super.onPostExecute(tinder);
 
             //Log.i("test", tinder.toString());
