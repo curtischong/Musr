@@ -17,7 +17,9 @@ import com.example.daniel.museapp.signal.Filter;
 
 //import com.eeg_project.components.signal.NoiseDetector;
 
+import java.io.PrintWriter;
 import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Bridged native module for classifier.
@@ -43,8 +45,9 @@ public class ClassifierModule implements BufferListener {
     public BandPowerExtractor bandExtractor;
 
     public LinkedList<double[]> data = new LinkedList<>();
-    private double[] averageSum = new double[2];
-    private int averageLength;
+
+    private Queue<Double> lband = new LinkedList<Double>();
+    private Queue<Double> rband = new LinkedList<Double>();
 
     // grab reference to global Muse
     private MainActivity mActivity;
@@ -134,6 +137,33 @@ public class ClassifierModule implements BufferListener {
             bands = new double[NUM_CHANNELS];
         }
 
+        private double generatelbandAverage(){
+            double tot = 0;
+            for(double currVal : lband){
+                tot += currVal;
+            }
+
+            return tot/lband.size();
+        }
+
+        private double generaterbandAverage(){
+            double tot = 0;
+            for(double currVal : rband){
+                tot += currVal;
+            }
+            return tot/rband.size();
+        }
+
+        private void shiftlbandVals(double newVal){
+            lband.add(newVal);
+            lband.remove();
+        }
+
+        private void shiftrbandVals(double newVal){
+            rband.add(newVal);
+            rband.remove();
+        }
+
         @Override
         public void run() {
 //            if (noisePresent(rawBuffer)) {
@@ -141,9 +171,21 @@ public class ClassifierModule implements BufferListener {
 //            }
             getPSD(rawBuffer);
             band2D = bandExtractor.extract2D(PSD);
-            averageSum[0] += band2D[1][2];
-            averageSum[1] += band2D[2][2];
-            averageLength += 1;
+
+            if(lband.size() == 30){
+                shiftlbandVals(band2D[1][2]);
+            }else{
+                lband.add(band2D[1][2]);
+            }
+            if(rband.size() == 30){
+                shiftrbandVals(band2D[2][2]);
+            }else{
+                rband.add(band2D[2][2]);
+            }
+
+            double avglband = generatelbandAverage();
+            double avgrband = generaterbandAverage();
+
 
             if(isListening) {
                 if (epochs == 0) {
@@ -158,10 +200,20 @@ public class ClassifierModule implements BufferListener {
                     }
                     leftAverage /= data.size();
                     rightAverage /= data.size();
-                    Log.i("average", "left: " + (averageSum[0] / averageLength));
-                    Log.i("average", "right: " + (averageSum[1] / averageLength));
+                    Log.i("average", "left: " + (avglband));
+                    Log.i("average", "right: " + (avgrband));
                     Log.i("average", "data left: " + leftAverage);
                     Log.i("average", "data right: " + rightAverage);
+                    double left = leftAverage - avglband;
+                    double right = rightAverage - avgrband;
+                    double average = (left + right) / 2;
+                    if (average < 0) {
+                        Log.i("state", "attracted");
+                        mActivity.likeTinder();
+                    } else {
+                        Log.i("state", "not attracted");
+                        mActivity.dislikeTinder();
+                    }
                     isListening = false;
                     return;
                 }
