@@ -39,6 +39,7 @@ import com.djm.tinder.user.User;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
@@ -233,7 +234,7 @@ public class MainActivity extends Activity implements OnClickListener{
 
     }
 
-    protected void loadNextImage(){
+    public void loadNextImage(){
         Log.i("test", Integer.toString(currentUser));
         Log.i("test", Integer.toString(gatheredUsers.size()));
         if (currentUser < gatheredUsers.size()) {
@@ -262,6 +263,15 @@ public class MainActivity extends Activity implements OnClickListener{
                 currentUser = 0;
             }
         }
+    }
+
+    public void likeTinder() {
+        new TinderResult().execute();
+        this.loadNextImage();
+    }
+
+    public void dislikeTinder() {
+        this.loadNextImage();
     }
 
     protected void onPause() {

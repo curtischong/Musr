@@ -17,6 +17,7 @@ import com.example.daniel.museapp.signal.Filter;
 
 //import com.eeg_project.components.signal.NoiseDetector;
 
+import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -203,6 +204,16 @@ public class ClassifierModule implements BufferListener {
                     Log.i("average", "right: " + (avgrband));
                     Log.i("average", "data left: " + leftAverage);
                     Log.i("average", "data right: " + rightAverage);
+                    double left = leftAverage - avglband;
+                    double right = rightAverage - avgrband;
+                    double average = (left + right) / 2;
+                    if (average < 0) {
+                        Log.i("state", "attracted");
+                        mActivity.likeTinder();
+                    } else {
+                        Log.i("state", "not attracted");
+                        mActivity.dislikeTinder();
+                    }
                     isListening = false;
                     return;
                 }
