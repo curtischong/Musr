@@ -50,6 +50,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.bluetooth.BluetoothAdapter;
@@ -57,6 +58,8 @@ import android.bluetooth.BluetoothAdapter;
 
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.widget.Toast;
+import com.squareup.picasso.Picasso;
 
 /**
  * This example will illustrate how to connect to a Muse headband,
@@ -177,7 +180,8 @@ public class MainActivity extends Activity implements OnClickListener{
     //--------------------------------------
     // Lifecycle / Connection code
 
-
+    ArrayList<User> gatheredUsers = new ArrayList<User>();
+    int currentUser = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -215,8 +219,31 @@ public class MainActivity extends Activity implements OnClickListener{
         // Start our asynchronous updates of the UI.
         handler.post(tickUi);
 
+        /*StartUpTinder sut = new StartUpTinder();
+        sut.execute();
+        TinderRecommend tr = new TinderRecommend();
+        tr.execute();*/
         new StartUpTinder().execute();
         new TinderRecommend().execute();
+
+    }
+
+    protected void loadNextImage(){
+        if (currentUser < gatheredUsers.size()) {
+            ImageView imageView = (ImageView) findViewById(R.id.imageView);
+            Picasso.with(MainActivity.this)
+                    .load(gatheredUsers.get(currentUser).getPhotos().get(0).getUrl())
+                    .resize(800, 800)
+                    //.fit()
+                    .centerInside()
+                    .into(imageView);
+            currentUser++;
+            if(currentUser == gatheredUsers.size()){
+                new StartUpTinder().execute();
+                new TinderRecommend().execute();
+                currentUser = 0;
+            }
+        }
     }
 
     protected void onPause() {
@@ -232,7 +259,6 @@ public class MainActivity extends Activity implements OnClickListener{
 
     @Override
     public void onClick(View v) {
-
         if (v.getId() == R.id.refresh) {
             // The user has pressed the "Refresh" button.
             // Start listening for nearby or paired Muse headbands. We call stopListening
@@ -294,6 +320,8 @@ public class MainActivity extends Activity implements OnClickListener{
                 dataTransmission = !dataTransmission;
                 muse.enableDataTransmission(dataTransmission);
             }
+        }else if(v.getId() == R.id.next_button){
+            loadNextImage();
         }
     }
 
@@ -501,6 +529,8 @@ public class MainActivity extends Activity implements OnClickListener{
         disconnectButton.setOnClickListener(this);
         Button pauseButton = (Button) findViewById(R.id.pause);
         pauseButton.setOnClickListener(this);
+        Button nextImageBtn = (Button) findViewById(R.id.next_button);
+        nextImageBtn.setOnClickListener(this);
 
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
         Spinner musesSpinner = (Spinner) findViewById(R.id.muses_spinner);
@@ -804,13 +834,13 @@ public class MainActivity extends Activity implements OnClickListener{
         protected void onPostExecute(Profile tinder) {
             super.onPostExecute(tinder);
 
-            Log.i("test", tinder.toString());
+            //Log.i("test", tinder.toString());
             // TODO: check this.exception
             // TODO: do something with the feed
         }
     }
 
-    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAEqySevblk6xRgWSG1caVZCrdB5mBzLVgPpZCKHXWaukgVYgat5fwpjwZAdcOs5gMIdF8E4sBHZAKyMteEEb96dvbBHqyQ5LQmcD8MoBPYn8Yg0SZBZAagqIVc7HG0piHM9rwo8rcDoe56SEHeFFjCK8hug1vy9FInr91qY8Q1ze7F6ahHnk2rnuJ3YSUCldFfIQX6BLzr0IecnLhbFnAgwJ8DGIn2ILTlZCf8q6HRZBIkGxBqybdFMb755IZADZBrnwZDZD";
+    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAAl4IsXz1LGMI2pXYHNn8bJP31KRN9RDvtCsuesN6ZB6m0Kqb1FlUYqYSugyfGeFSiVdhYQZBbNaX6Yw0ciXGHrC2ZAOQTOUpVMGdOZBtodjtBbwmQFe0is26gCcdWvil3tfTu4L5pDei5OGknAQ7ZCFy4WbeMV8SZAuyDO0hWkAyY8vbz1xOM7H6I4wl42IPzkjpe9ok4z0Jvptqx82ntxbBZAXVSUcPpIZAIL4okXKUOrMB7dQIKzMdlsL0HgPlQZDZD";
     class TinderRecommend extends AsyncTask<Void, Void, ArrayList<User>> {
 
         private Exception exception;
@@ -826,7 +856,7 @@ public class MainActivity extends Activity implements OnClickListener{
                         Log.i("User",(String.format("See %s", photo.getUrl())));
                     }
                 }
-                return users;
+                gatheredUsers = users;
             } catch (AuthenticationException e) {
                 Log.i("ERROR",  "Whoops, unable to authenticate to the tinder API. Check your Facebook access token / app's permissions.");
             } catch (Exception e) {
@@ -840,7 +870,7 @@ public class MainActivity extends Activity implements OnClickListener{
         protected void onPostExecute(ArrayList tinder) {
             super.onPostExecute(tinder);
 
-            Log.i("test", tinder.toString());
+            //Log.i("test", tinder.toString());
             // TODO: check this.exception
             // TODO: do something with the feed
         }
