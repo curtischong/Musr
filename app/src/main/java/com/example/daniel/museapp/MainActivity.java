@@ -198,7 +198,7 @@ public class MainActivity extends Activity implements OnClickListener{
         // Register a listener to receive connection state changes.
         connectionListener = new ConnectionListener(weakActivity);
         // Register a listener to receive data from a Muse.
-        dataListener = new DataListener(weakActivity);
+//        dataListener = new DataListener(weakActivity);
         // Register a listener to receive notifications of what Muse headbands
         // we can connect to.
         manager.setMuseListener(new MuseL(weakActivity));
@@ -223,8 +223,8 @@ public class MainActivity extends Activity implements OnClickListener{
         sut.execute();
         TinderRecommend tr = new TinderRecommend();
         tr.execute();*/
-        new StartUpTinder().execute();
-        new TinderRecommend().execute();
+        //new StartUpTinder().execute();
+        //new TinderRecommend().execute();
 
     }
 
