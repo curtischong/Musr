@@ -1,4 +1,4 @@
-package com.example.daniel.museapp;
+package com.example.daniel.museapp.signal;
 
 import org.apache.commons.lang3.ArrayUtils;
 

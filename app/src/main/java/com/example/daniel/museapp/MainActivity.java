@@ -57,7 +57,6 @@ import android.bluetooth.BluetoothAdapter;
 
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.widget.Toast;
 
 /**
  * This example will illustrate how to connect to a Muse headband,
@@ -101,7 +100,7 @@ public class MainActivity extends Activity implements OnClickListener{
      * headband, register listeners to receive EEG data and get headband
      * configuration and version information.
      */
-    private Muse muse;
+    public Muse muse;
 
     /**
      * The ConnectionListener will be notified whenever there is a change in
@@ -175,8 +174,6 @@ public class MainActivity extends Activity implements OnClickListener{
      */
     private final AtomicReference<Handler> fileHandler = new AtomicReference<>();
 
-    private FFT fft;
-
     //--------------------------------------
     // Lifecycle / Connection code
 
@@ -184,8 +181,6 @@ public class MainActivity extends Activity implements OnClickListener{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        fft = new FFT(256, 256, 256);
 
         // We need to set the context on MuseManagerAndroid before we can do anything.
         // This must come before other LibMuse API calls as it also loads the library.

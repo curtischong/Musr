@@ -1,6 +1,4 @@
-package com.example.daniel.museapp;
-
-import android.util.Log;
+package com.example.daniel.museapp.signal;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 import java.lang.Math; // For log10
