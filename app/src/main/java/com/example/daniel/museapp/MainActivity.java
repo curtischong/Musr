@@ -842,7 +842,7 @@ public class MainActivity extends Activity implements OnClickListener{
         protected void onPostExecute(Profile tinder) {
             super.onPostExecute(tinder);
 
-            Log.i("test", tinder.toString());
+            //Log.i("test", tinder.toString());
             // TODO: check this.exception
             // TODO: do something with the feed
         }
