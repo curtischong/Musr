@@ -847,13 +847,13 @@ public class MainActivity extends Activity implements OnClickListener{
             try {
                 final Tinder tinder = Tinder.fromAccessToken(ACCESS_TOKEN);
                 yourProfile = tinder.getProfile();
-                Log.i("SUCCESS", String.format("About me: %s", yourProfile.getName()));
+                Log.i("tinder", String.format("About me: %s", yourProfile.getName()));
                 return yourProfile;
             } catch (AuthenticationException e) {
-                Log.i("ERROR",  "Whoops, unable to authenticate to the tinder API. Check your Facebook access token / app's permissions.");
+                Log.e("tinder",  "Whoops, unable to authenticate to the tinder API. Check your Facebook access token / app's permissions.");
             } catch (Exception e) {
-                Log.i("ERROR", e.toString());
-                Log.i("ERROR", "there was an error");
+                Log.e("tinder", e.toString());
+                Log.e("tinder", "there was an error");
             }
             return null;
         }
