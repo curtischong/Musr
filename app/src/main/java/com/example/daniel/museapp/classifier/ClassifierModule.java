@@ -207,7 +207,7 @@ public class ClassifierModule implements BufferListener {
                     double left = leftAverage - avglband;
                     double right = rightAverage - avgrband;
                     double average = (left + right) / 2;
-                    if (average < 0) {
+                    if (average > 0) {
                         Log.i("state", "attracted");
                         Handler mainHandler = new Handler(mActivity.getMainLooper());
                         mainHandler.post(new Runnable() {

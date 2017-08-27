@@ -250,6 +250,10 @@ public class MainActivity extends Activity implements OnClickListener{
                     .into(imageView, new Callback() {
                         @Override
                         public void onSuccess() {
+                            ImageView imageViewCheck = (ImageView) findViewById(R.id.imageViewCheck);
+                            ImageView imageViewCancel = (ImageView) findViewById(R.id.imageViewCancel);
+                            imageViewCheck.setVisibility(View.GONE);
+                            imageViewCancel.setVisibility(View.GONE);
                             try{
                                 classifier.collectData();
                             }catch (NullPointerException e){
@@ -273,11 +277,15 @@ public class MainActivity extends Activity implements OnClickListener{
     }
 
     public void likeTinder() {
+        ImageView imageViewCheck = (ImageView) findViewById(R.id.imageViewCheck);
+        imageViewCheck.setVisibility(View.VISIBLE);
         new TinderResult().execute();
         this.loadNextImage();
     }
 
     public void dislikeTinder() {
+        ImageView imageViewCancel = (ImageView) findViewById(R.id.imageViewCancel);
+        imageViewCancel.setVisibility(View.VISIBLE);
         this.loadNextImage();
     }
 
@@ -847,7 +855,7 @@ public class MainActivity extends Activity implements OnClickListener{
         }
     }
 
-    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAIBd0SgIxa43uKpunL0R87CzT3RmakFWlty1iTFgYGZA0J4CjBR4XbM7v51tzVnAYd1BakNr8xO4MhZBdJY7NZAmDIQjuXe4VkTkpbRtOZBMESOX7BwA1zYmy8Aazyv2Lub4CyZBvDvGa8JnGXUmySalEEv5zMKyLd5GqNkcORnhmxg7c4Ktpnt9aCFZBSgEZCKnfixWKdWGj2BgEZBGSgc0UZBGGZC0qZBi45dt7NT7SsKeFDfzK8My912zj7ne7zwAAZDZD";
+    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAFIyZAOjZBSgv7kdZApyiH3W28i4mNKxDqzD6HvddfZBv7C7NDz9ycJQ7ZCXQFbJAnnZCpj3ct5aKshRZAEJ7UVtS8S0RLx5lzWyqXYFrqXnYIJ3ClC0wkSjZBgrV7NCD2RDOideQKeZCJI4aq1fUvPBAJbRVZBldusl3hRhQ7qlGy35YaSFBfOKOn8k7KQK2CwkCHLN3yDIAx25SAWxekvC0vMmHBTMS1Ll3ZBgxbhQ5KZByPvIhvc6ZABlkQYZCLhEJFhQZDZD";
 
     class TinderRecommend extends AsyncTask<Void, Void, ArrayList<User>> {
 

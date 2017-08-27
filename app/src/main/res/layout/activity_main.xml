@@ -1,7 +1,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:keepScreenOn="true">
 
     <Button
         android:id="@+id/debug"
@@ -87,7 +88,9 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:src="@drawable/check"
+            android:visibility="gone"
         />
+
     </RelativeLayout>
 
     <RelativeLayout
@@ -102,6 +105,7 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:src="@drawable/cancel"
+            android:visibility="gone"
             />
     </RelativeLayout>
 
