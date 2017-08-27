@@ -222,9 +222,6 @@ public class MainActivity extends Activity implements OnClickListener{
         // This is only needed if you want to do File I/O.
         fileThread.start();
 
-        // Start our asynchronous updates of the UI.
-        handler.post(tickUi);
-
 
 
         /*StartUpTinder sut = new StartUpTinder();
@@ -436,19 +433,6 @@ public class MainActivity extends Activity implements OnClickListener{
                 final TextView statusText = (TextView) findViewById(R.id.con_status);
                 statusText.setText(status);
 
-                final MuseVersion museVersion = muse.getMuseVersion();
-                final TextView museVersionText = (TextView) findViewById(R.id.version);
-                // If we haven't yet connected to the headband, the version information
-                // will be null.  You have to connect to the headband before either the
-                // MuseVersion or MuseConfiguration information is known.
-                if (museVersion != null) {
-                    final String version = museVersion.getFirmwareType() + " - "
-                            + museVersion.getFirmwareVersion() + " - "
-                            + museVersion.getProtocolVersion();
-                    museVersionText.setText(version);
-                } else {
-                    museVersionText.setText(R.string.undefined);
-                }
             }
         });
 
@@ -563,66 +547,6 @@ public class MainActivity extends Activity implements OnClickListener{
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
         Spinner musesSpinner = (Spinner) findViewById(R.id.muses_spinner);
         musesSpinner.setAdapter(spinnerAdapter);
-    }
-
-    /**
-     * The runnable that is used to update the UI at 60Hz.
-     *
-     * We update the UI from this Runnable instead of in packet handlers
-     * because packets come in at high frequency -- 220Hz or more for raw EEG
-     * -- and it only makes sense to update the UI at about 60fps. The update
-     * functions do some string allocation, so this reduces our memory
-     * footprint and makes GC pauses less frequent/noticeable.
-     */
-    private final Runnable tickUi = new Runnable() {
-        @Override
-        public void run() {
-            if (eegStale) {
-                updateEeg();
-            }
-            if (accelStale) {
-                updateAccel();
-            }
-            if (alphaStale) {
-                updateAlpha();
-            }
-            handler.postDelayed(tickUi, 1000 / 60);
-        }
-    };
-
-    /**
-     * The following methods update the TextViews in the UI with the data
-     * from the buffers.
-     */
-    private void updateAccel() {
-        TextView acc_x = (TextView)findViewById(R.id.acc_x);
-        TextView acc_y = (TextView)findViewById(R.id.acc_y);
-        TextView acc_z = (TextView)findViewById(R.id.acc_z);
-        acc_x.setText(String.format("%6.2f", accelBuffer[0]));
-        acc_y.setText(String.format("%6.2f", accelBuffer[1]));
-        acc_z.setText(String.format("%6.2f", accelBuffer[2]));
-    }
-
-    private void updateEeg() {
-        TextView tp9 = (TextView)findViewById(R.id.eeg_tp9);
-        TextView fp1 = (TextView)findViewById(R.id.eeg_af7);
-        TextView fp2 = (TextView)findViewById(R.id.eeg_af8);
-        TextView tp10 = (TextView)findViewById(R.id.eeg_tp10);
-        tp9.setText(String.format("%6.2f", eegBuffer[0]));
-        fp1.setText(String.format("%6.2f", eegBuffer[1]));
-        fp2.setText(String.format("%6.2f", eegBuffer[2]));
-        tp10.setText(String.format("%6.2f", eegBuffer[3]));
-    }
-
-    private void updateAlpha() {
-        TextView elem1 = (TextView)findViewById(R.id.elem1);
-        elem1.setText(String.format("%6.2f", alphaBuffer[0]));
-        TextView elem2 = (TextView)findViewById(R.id.elem2);
-        elem2.setText(String.format("%6.2f", alphaBuffer[1]));
-        TextView elem3 = (TextView)findViewById(R.id.elem3);
-        elem3.setText(String.format("%6.2f", alphaBuffer[2]));
-        TextView elem4 = (TextView)findViewById(R.id.elem4);
-        elem4.setText(String.format("%6.2f", alphaBuffer[3]));
     }
 
 
@@ -868,7 +792,7 @@ public class MainActivity extends Activity implements OnClickListener{
         }
     }
 
-    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAOvCNq4JIcQN2zmokfzh9M6o82lEvRRAOUXZCE5jZA5RP8Rv70fcuKSu2FOskWWZB5mQHB65GUiP2p0WuUMBkCRdsBEserc2rqwWvyPqBUEv9TaNils0ETFaeQUu3PrUKMmFpHFhxQbSZBUhGYZBB8pHHm80uCxz2kaocoKASZBbDTuKwYmGNJp3UwZA8FyVMZCAKjZAl8OoZCZAa401hNuLuPWOeaQj1ylsbbxilCSmDYFulMMgGleQOIXHq34547ZCOQZDZD";
+    final String ACCESS_TOKEN = "EAAGm0PX4ZCpsBAIBd0SgIxa43uKpunL0R87CzT3RmakFWlty1iTFgYGZA0J4CjBR4XbM7v51tzVnAYd1BakNr8xO4MhZBdJY7NZAmDIQjuXe4VkTkpbRtOZBMESOX7BwA1zYmy8Aazyv2Lub4CyZBvDvGa8JnGXUmySalEEv5zMKyLd5GqNkcORnhmxg7c4Ktpnt9aCFZBSgEZCKnfixWKdWGj2BgEZBGSgc0UZBGGZC0qZBi45dt7NT7SsKeFDfzK8My912zj7ne7zwAAZDZD";
 
     class TinderRecommend extends AsyncTask<Void, Void, ArrayList<User>> {
 

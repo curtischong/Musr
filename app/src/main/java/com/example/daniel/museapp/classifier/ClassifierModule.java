@@ -144,9 +144,6 @@ public class ClassifierModule implements BufferListener {
             averageSum[0] += band2D[1][2];
             averageSum[1] += band2D[2][2];
             averageLength += 1;
-            Log.i("average", "left: " + (averageSum[0] / averageLength));
-            Log.i("average", "right: " + (averageSum[1] / averageLength));
-
 
             if(isListening) {
                 if (epochs == 0) {
@@ -161,6 +158,8 @@ public class ClassifierModule implements BufferListener {
                     }
                     leftAverage /= data.size();
                     rightAverage /= data.size();
+                    Log.i("average", "left: " + (averageSum[0] / averageLength));
+                    Log.i("average", "right: " + (averageSum[1] / averageLength));
                     Log.i("average", "data left: " + leftAverage);
                     Log.i("average", "data right: " + rightAverage);
                     isListening = false;
