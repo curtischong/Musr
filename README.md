@@ -1,2 +1,2 @@
 # hackthe6ix17
-![A demo of the app](http://gph.is/2EDffbs)
+![A demo of the app](https://media.giphy.com/media/l35QOKN1OjDFIzeM6B/giphy.gif)
